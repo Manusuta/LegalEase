@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { setIsLogin, updateToken } from './store/UserSlice';
 import Navbar from './component/Navbar';
 import { Route, Routes } from 'react-router-dom';
+import Search from'./component/SearchLawyer';
 import Signin from './component/Signin';
 import Signup from './component/Signup';
 import Home from './component/Home';
@@ -41,6 +42,7 @@ export default function App() {
         <Route path='/about' element={<PublicElement><About /></PublicElement>} />
         <Route path='/profile' element={<UserElement><Profile /></UserElement>} />
         <Route path='/logout' element={<PublicElement><Logout /></PublicElement>} />
+        <Route path='/search' element={<PublicElement><Search/></PublicElement>}/>
         <Route path='/' element={<PublicElement><Home /></PublicElement>} />
       </Routes>
     )
