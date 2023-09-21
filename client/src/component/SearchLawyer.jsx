@@ -102,15 +102,39 @@ function SearchLawyer() {
 const [selectedState, setSelectedState] = useState('');
 const [selectedCity, setSelectedCity] = useState('');
 const [stateData, setStateData] = useState([]);
-
+const [suggestions, setSuggestions] = useState([]);
 useEffect(() => {
-  // Fetch states when the selected country changes
+  
   if (selectedCountry) {
     const states = State.getStatesOfCountry(selectedCountry);
     setStateData(states);
   }
 }, [selectedCountry]);
+  
+  
+  const updateSuggestions = (query) => {
+    
+    const filtered = data.filter((lawyer) => {
+      
+      return (
+        lawyer.name.toLowerCase().includes(query.toLowerCase()) ||
+        lawyer.title.toLowerCase().includes(query.toLowerCase())||
+        lawyer.position.toLowerCase().includes(query.toLowerCase())
+      );
+    });
 
+  
+    setSuggestions(filtered);
+  };
+
+  
+  const handleSearchChange = (e) => {
+    const query = e.target.value;
+    setSearchQuery(query); 
+
+  
+    updateSuggestions(query);
+  };
 const handleCountryChange = (value) => {
   setSelectedCountry(value);
 };
@@ -124,11 +148,11 @@ const handleCityChange = (value) => {
 };
 const handleBookmarkToggle = (lawyerId) => {
   if (bookmarkedLawyers.includes(lawyerId)) {
-    // If already bookmarked, remove from bookmarks
+   
     const updatedBookmarks = bookmarkedLawyers.filter((id) => id !== lawyerId);
     setBookmarkedLawyers(updatedBookmarks);
   } else {
-    // If not bookmarked, add to bookmarks
+
     const updatedBookmarks = [...bookmarkedLawyers, lawyerId];
     setBookmarkedLawyers(updatedBookmarks);
   }
@@ -242,7 +266,7 @@ const handleBookmarkToggle = (lawyerId) => {
   </select>
 {/* </div> */}
 
-{/* City DropdCown */}
+
 {/* <div className="mb-4 "> */}
   
   <select
@@ -268,8 +292,30 @@ const handleBookmarkToggle = (lawyerId) => {
               placeholder=" Search here "
               className="p-2 my-5 justify-center items-center border font-semibold rounded-full w-1/2   bg- opacity-40  "
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={handleSearchChange}
+              // onChange={(e) => setSearchQuery(e.target.value)}
             />
+            {suggestions.length > 0 && (
+          <div className="absolute z-10 bg-white  w-1/2 rounded-md shadow-md">
+            <ul>
+              {suggestions.map((suggestion, index) => (
+                <li
+                  key={index}
+                  className="p-2 cursor-pointer hover:bg-gray-200"
+                  onClick={() => {
+                   
+                    setSearchQuery(suggestion.name)||
+                    
+                    setSuggestions([]);
+                  }}
+                >
+                  {suggestion.name}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      
           </div>
           <div className="mt-20 flex items-center space-x-4 text-white p-4">
             <button
@@ -301,7 +347,7 @@ const handleBookmarkToggle = (lawyerId) => {
           </div>
         </div>
       </div>
-      <div className=" grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4">
+      <div className=" grid grid-cols-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4">
 
         {filteredLawyers.map((lawyer, index) => (
           
