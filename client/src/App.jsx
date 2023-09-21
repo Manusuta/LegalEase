@@ -11,6 +11,7 @@ import About from './component/About';
 import { ToastContainer } from 'react-toastify';
 import Logout from './component/Logout';
 import Profile from './component/Profile';
+import Tutor from './component/Tutor';
 
 export default function App() {
 
@@ -43,6 +44,7 @@ export default function App() {
         <Route path='/profile' element={<UserElement><Profile /></UserElement>} />
         <Route path='/logout' element={<PublicElement><Logout /></PublicElement>} />
         <Route path='/search' element={<PublicElement><Search/></PublicElement>}/>
+        <Route path='/tutor' element={<PublicElement><Tutor/></PublicElement>}/>
         <Route path='/' element={<PublicElement><Home /></PublicElement>} />
       </Routes>
     )
