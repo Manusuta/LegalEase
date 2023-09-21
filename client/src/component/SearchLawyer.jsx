@@ -1,7 +1,7 @@
 
 
-import React, { useState } from 'react';
-import { State, City } from 'country-state-city';
+import React, { useState,useEffect } from 'react';
+import { Country,State, City } from 'country-state-city';
 import RatingStars from 'react-rating-stars-component';
 
 const data = [
@@ -26,15 +26,16 @@ const data = [
       "avilable": true,
       "tag": ["Intellectual Property"],
       "address": "djsadj",
-      "T_rating": "4",
+      "T_rating": "4.0",
       "review": [],
       "points": [],
       "createdAt": { "$date": { "$numberLong": "1694953759988" } },
       "updatedAt": { "$date": { "$numberLong": "1694953759988" } },
       "__v": { "$numberInt": "0" },
       "photo": "https://res.cloudinary.com/dbvurfvz8/image/upload/v1694953601/eejt4xb4r4zbzjlhiira.jpg" ,
-      "country": "United States",
-      "state": "California"
+      "country": "INDIA",
+      "state": "UTTAR PRADESH",
+      "city":"DHAMPUR"
     },
     {
       "_id": { "$oid": "6506f11f3d0b555071b84d65" },
@@ -57,15 +58,16 @@ const data = [
       "avilable": true,
       "tag": ["Intellectual Property"],
       "address": "djsadj",
-      "T_rating": "13",
+      "T_rating": "5.0",
       "review": [],
       "points": [],
       "createdAt": { "$date": { "$numberLong": "1694953759988" } },
       "updatedAt": { "$date": { "$numberLong": "1694953759988" } },
       "__v": { "$numberInt": "0" },
       "photo": "https://res.cloudinary.com/dbvurfvz8/image/upload/v1694953601/eejt4xb4r4zbzjlhiira.jpg",
-      "country": "United States",
-    "state": "California"
+      "country": "UNITED STATE",
+    "state": "CALIFORNIA"
+    
     },
 ];
 
@@ -83,9 +85,32 @@ function SearchLawyer() {
   const [sortBy, setSortBy] = useState('');
   const [sortDirection, setSortDirection] = useState('asc');
   
-  const [stateData, setStateData] = useState();
-  const [cityData, setCityData] = useState();
-  
+  const [selectedCountry, setSelectedCountry] = useState('');
+const [selectedState, setSelectedState] = useState('');
+const [selectedCity, setSelectedCity] = useState('');
+const [stateData, setStateData] = useState([]);
+
+useEffect(() => {
+  // Fetch states when the selected country changes
+  if (selectedCountry) {
+    const states = State.getStatesOfCountry(selectedCountry);
+    setStateData(states);
+  }
+}, [selectedCountry]);
+
+const handleCountryChange = (value) => {
+  setSelectedCountry(value);
+};
+
+const handleStateChange = (value) => {
+  setSelectedState(value);
+};
+
+const handleCityChange = (value) => {
+  setSelectedCity(value);
+};
+
+  // };
   const handleSortChange = (e) => {
     if (e.target.value === sortBy) {
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
@@ -97,7 +122,7 @@ function SearchLawyer() {
 
   const getSortIcon = (criteria) => {
     if (sortBy === criteria) {
-      return sortDirection === 'asc' ? '↓↑' : '↑↓' ;
+      return sortDirection === 'asc' ?'↑↓ ' : '↓↑';
     }
     return '';
   };
@@ -105,18 +130,32 @@ function SearchLawyer() {
   const filteredLawyers = data
     .filter((lawyer) => {
       const queryWords = searchQuery.toLowerCase().split(' ');
-
+   
+    
+      
+      
       return (
+        
         queryWords.every((word) =>
           Object.values(lawyer).some(
             (value) =>
               typeof value === 'string' && value.toLowerCase().includes(word)
           )
+          
         ) &&
+        
         (!filters.experience || lawyer.description?.experience?.year?.$numberInt >= filters.experience) &&
-        (!filters.rating || lawyer.T_rating >= filters.rating) &&
-        (!filters.reviews || lawyer.review?.length >= filters.reviews)
+        (!filters.rating || lawyer.T_rating >= filters. rating) &&
+        (!filters.reviews || lawyer.review?.length >= filters.reviews)&&
+        
+        (!filters.selectedCountry || lawyer.country.toLowerCase() === filters.selectedCountry.toLowerCase())&&
+       ( !filters.selectedState || !lawyer.state || lawyer.state.toLowerCase() === filters.selectedState.toLowerCase())&&
+      ( !filters.selectedCity || !lawyer.city || lawyer.city.toLowerCase() === filters.selectedCity.toLowerCase())
+    
       );
+      
+      
+      
     })
     .sort((a, b) => {
       if (sortBy === 'experience') {
@@ -124,23 +163,81 @@ function SearchLawyer() {
           (b.description?.experience?.year?.$numberInt || 0) -
           (a.description?.experience?.year?.$numberInt || 0);
         return sortDirection === 'asc' ? experienceDiff : -experienceDiff;
-      } else if (sortBy === 'rating') {
-        const ratingA = parseFloat(a.T_rating || 0); 
-    const ratingB = parseFloat(b.T_rating || 0); 
-
-    const ratingDiff = ratingB - ratingA;
-        return sortDirection === 'asc' ? ratingDiff : -ratingDiff;
+      } else if (sortBy === 'T_rating') {
+        const ratingDiff = parseFloat(b.T_rating || 0)- parseFloat(a.T_rating || 0); 
+   // const ratingB = parseFloat(b.T_rating || 0); 
+   return sortDirection === 'asc' ? ratingDiff : -ratingDiff;
+       
       } else if (sortBy === 'price') {
         const priceDiff = (b.price || 0) - (a.price || 0);
         return sortDirection === 'asc' ? priceDiff : -priceDiff;
       }
       return 0;
+
     });
 
   return (
+    
     <div className="bg-blue-100 min-h-screen  ">
+      
       <div className="bg-blue-900 p-10 mb-4  ">
         <div className="flex  justify-center items-center ">
+        <div className="mb-4">
+        <div className="relative p-4 text-white  ">
+        <div className="space-y-2 ">
+          <div className=" mt-4 ">
+  <select
+    className=" rounded p-2 w-full bg-blue-500 text-white"
+    value={selectedCountry}
+    onChange={(e) => handleCountryChange(e.target.value)}
+  >
+    {/* <option value="India">India</option> */}
+    <option value="">Select country</option>
+              {Country.getAllCountries().map((country) => (
+                <option key={country.isoCode} value={country.isoCode}>
+                  {country.name}
+                </option>))}
+  
+  </select>
+</div>
+
+
+<div className="mb-4">
+  
+  <select
+    className=" rounded  p-2 w-full bg-blue-500 text-white"
+    value={selectedState}
+    onChange={(e) => handleStateChange(e.target.value)}
+  >
+    <option value="">Select state</option>
+    {stateData.map((state) => (
+      <option key={state.isoCode} value={state.isoCode}>
+        {state.name}
+      </option>
+    ))}
+  </select>
+</div>
+
+{/* City DropdCown */}
+<div className="mb-4 ">
+  
+  <select
+    className=" rounded p-2 w-full bg-blue-500 text-white"
+    value={selectedCity}
+    onChange={(e) =>  handleCityChange(e.target.value)}
+  >
+    
+    <option value="">Select city</option>
+    {City.getCitiesOfState(selectedCountry, selectedState).map((city) => (
+      <option key={city.name} value={city.name}>
+        {city.name}
+      </option>
+    ))}
+  </select>
+</div>
+</div>
+        </div>
+      </div>
           <div className="relative flex-1 p-8  ">
             <input
               type="text "
@@ -153,15 +250,20 @@ function SearchLawyer() {
           <div className="mt-20 flex items-center space-x-4 text-white">
             <button
               className={`bg-blue-500 text-white px-4 py-2 hover:bg-blue-700  rounded-md ${sortBy === 'experience' ? 'bg-blue-600' : ''}`}
-              onClick={() => handleSortChange({ target: { value: 'experience' } })}
+              onClick={() =>{ handleSortChange({ target: { value: 'experience' } })
+              handleSortDirectionToggle();
+            }}
             >
               Sort by Experience {getSortIcon('experience')}
             </button>
             <button
               className={`bg-blue-500 text-white px-4 py-2 hover:bg-blue-700  rounded-md ${sortBy === 'rating' ? 'bg-blue-600' : ''}`}
-              onClick={() => handleSortChange({ target: { value: 'rating' } })}
+              onClick={() =>{ handleSortChange({ target: { value: 'T_rating' } })
+              handleSortDirectionToggle();
+            }}
+              
             >
-              Sort by Ratings {getSortIcon('rating')}
+              Sort by Ratings {getSortIcon('T_rating')}
             </button>
             <button
               className={`bg-blue-500 text-white px-4 hover:bg-blue-700  py-2 rounded-md ${sortBy === 'price' ? 'bg-blue-600' : ''}`}
@@ -176,7 +278,9 @@ function SearchLawyer() {
         </div>
       </div>
       <div className="mt- grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4">
+
         {filteredLawyers.map((lawyer, index) => (
+          
           <div
             key={index}
             className=" p-4 bg-white rounded-md shadow-md  hover:shadow-xl cursor-pointer  "
@@ -219,7 +323,9 @@ function SearchLawyer() {
           </div>
         ))}
       </div>
+ 
     </div>
+    
   );
 }
 
